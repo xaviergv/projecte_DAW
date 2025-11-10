@@ -22,7 +22,6 @@
 | - [x] Normalització fins a 3FN      | - [x] Responsive (mòbil + escriptori)| - [ ] Gestionar errors de connexió  |
 |                                     |                                     |                                     |
 | **Estat:** Completat                | **Estat:** Completat                | **Estat:** Pendent                  |
-| **Data límit:** 20/11/2025          | **Data límit:** 22/11/2025          | **Data límit:** 25/11/2025          |
 
 ---
 
