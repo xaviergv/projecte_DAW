@@ -6,25 +6,30 @@
 
 ## Objectius del Projecte
 
-| **Fase 1**                          | **Fase 2**                          | **Fase 3**                          |
+| **Base de Dades** *(Xavier)*        | **Pàgina Web** *(Víctor)*           | **Connexió XAMPP** *(Tots dos)*     |
 |-------------------------------------|-------------------------------------|-------------------------------------|
-| Descripció de la tasca 1            | Descripció de la tasca 4            | Descripció de la tasca 7            |
-| - [ ] Subtasca A                    | - [ ] Subtasca D                    | - [ ] Subtasca G                    |
-| - [ ] Subtasca B                    | - [ ] Subtasca E                    | - [ ] Subtasca H                    |
+| Dissenyar el model ER               | Dissenyar la interfície (HTML/CSS)  | Configurar XAMPP (Apache + MySQL)   |
+| - [x] Crear diagrama ER             | - [x] Pàgina d'inici                | - [ ] Iniciar serveis locals        |
+| - [x] Definir taules principals     | - [x] Pàgina de login               | - [ ] Connectar PHP amb MySQL       |
+| - [x] Establir relacions (1:N, N:M) | - [x] Pàgina de resultats           | - [ ] Provar connexió amb `mysqli`  |
+| - [x] Normalització fins a 3FN      | - [x] Responsive (mòbil + escriptori)| - [ ] Gestionar errors de connexió  |
 |                                     |                                     |                                     |
-| **Responsable:** Xavier             | **Responsable:** Víctor             | **Responsable:** Tots dos           |
-| **Data límit:** 15/11/2025          | **Data límit:** 22/11/2025          | **Data límit:** 30/11/2025          |
+| **Estat:** Completat                | **Estat:** Completat                | **Estat:** Pendent                  |
 
 ---
 
-> **Llegenda:**  
-> - [ ] → Tasca pendent  
-> - [x] → Tasca completada
+> **Llegenda de tasques:**  
+> - [ ] → Pendent  
+> - [x] → Completada
 
 ---
 
-### Com omplir-la (exemple real):
-```markdown
-| **Disseny UI**                      | **Backend API**                     | **Base de dades**                   |
-|-------------------------------------|-------------------------------------|-------------------------------------|
-| Crear wireframes amb Figma          |
+## Tecnologies Utilitzades
+- **Frontend:** HTML, CSS, JavaScript
+- **Backend:** PHP
+- **Base de dades:** MySQL
+- **Entorn local:** XAMPP
+
+---
+
+## Estructura del Repositori
