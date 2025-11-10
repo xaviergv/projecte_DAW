@@ -2,6 +2,13 @@
 **Grup:** High Elo  
 **Membres:** Xavier Gil i Víctor
 
+<div align="right">
+  <small>
+    <strong>Llegenda:</strong>  
+    [ ] Pendent  [x] Completada
+  </small>
+</div>
+
 ---
 
 ## Objectius del Projecte
@@ -15,12 +22,7 @@
 | - [x] Normalització fins a 3FN      | - [x] Responsive (mòbil + escriptori)| - [ ] Gestionar errors de connexió  |
 |                                     |                                     |                                     |
 | **Estat:** Completat                | **Estat:** Completat                | **Estat:** Pendent                  |
-
----
-
-> **Llegenda de tasques:**  
-> - [ ] → Pendent  
-> - [x] → Completada
+| **Data límit:** 20/11/2025          | **Data límit:** 22/11/2025          | **Data límit:** 25/11/2025          |
 
 ---
 
