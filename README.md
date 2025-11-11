@@ -1,6 +1,6 @@
 # Projecte DAW
 **Grup:** High Elo  
-**Membres:** Xavier Gil i Víctor
+**Membres:** Xavier G i Víctor
 
 <div align="right">
   <small>
