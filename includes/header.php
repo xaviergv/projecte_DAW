@@ -26,6 +26,7 @@
             <li><a href="?p=sensors" class="<?= $p === 'sensors' ? 'active' : '' ?>"><i class="fa-solid fa-tower-broadcast"></i> <span>Sensors i Alertes</span></a></li>
             <li><a href="?p=collites" class="<?= $p === 'collites' ? 'active' : '' ?>"><i class="fa-solid fa-wheat-awn"></i> <span>Collites</span></a></li>
             <li><a href="?p=lots" class="<?= $p === 'lots' ? 'active' : '' ?>"><i class="fa-solid fa-barcode"></i> <span>Traçabilitat</span></a></li>
+            <li><a href="?p=dashboard" class="<?= $p === 'dashboard' ? 'active' : '' ?>"><i class="fa-solid fa-chart-pie"></i> <span>Estadístiques</span></a></li>
         </ul>
     </aside>
 

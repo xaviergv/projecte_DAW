@@ -1,3 +1,26 @@
+<?php
+// ────────────────────────────────────────────────
+// AUTO-CREACIÓ DE LA TAULA TRACTAMENTS_OFICIALS
+// ────────────────────────────────────────────────
+$conn->query("
+    CREATE TABLE IF NOT EXISTS `TractamentsOficials` (
+        `id_tractament` int(11) NOT NULL AUTO_INCREMENT,
+        `data` date NOT NULL,
+        `parcela_id` int(11) NOT NULL,
+        `producte_id` int(11) NOT NULL,
+        `dosi` decimal(10,2) NOT NULL,
+        `operari` varchar(150) DEFAULT NULL,
+        `maquina` varchar(100) DEFAULT NULL,
+        `termini_seguretat` int(11) DEFAULT 0,
+        `observacions` text DEFAULT NULL,
+        PRIMARY KEY (`id_tractament`),
+        KEY `parcela_id` (`parcela_id`),
+        KEY `producte_id` (`producte_id`),
+        CONSTRAINT `fk_tractament_parcela` FOREIGN KEY (`parcela_id`) REFERENCES `Parcel·la` (`id_parcela`) ON DELETE CASCADE,
+        CONSTRAINT `fk_tractament_producte` FOREIGN KEY (`producte_id`) REFERENCES `Producte` (`id_producte`) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_spanish_ci
+");
+?>
 <div class="section">
     <!-- 1. MONITORATGE DE PLAGUES -->
     <div class="form-section">
@@ -142,36 +165,39 @@
 
     <hr style="border: 0; height: 1px; background: var(--border-color); margin: 40px 0;">
 
-
-    <!-- 2. APLICACIÓ DE TRACTAMENT -->
+    <!-- 2. QUADERN D'EXPLOTACIÓ (TRACTAMENTS) -->
     <div class="form-section">
-        <h3><i class="fa-solid fa-syringe" style="color:var(--info); margin-right:8px;"></i> Afegir nova aplicació de tractament</h3>
+        <h3><i class="fa-solid fa-book-open" style="color:var(--info); margin-right:8px;"></i> Quadern d'Explotació (Tractament Oficial)</h3>
+        <p style="color:var(--text-muted); margin-bottom:20px; font-size:0.9rem;">
+            Registre simulat per complir amb les normatives de seguretat fito-sanitària. Es limitarà l'aplicació en base a les dosis toxicològiques permeses.
+        </p>
+
         <form method="post">
             <input type="hidden" name="p" value="monitoratge_plagues">
-            <input type="hidden" name="nou_aplicacio" value="1">
+            <input type="hidden" name="nou_tractament_oficial" value="1">
 
             <div class="form-grid">
                 <div class="form-group">
-                    <label>Sector:</label>
-                    <select name="id_sector" required>
-                        <option value="">Selecciona sector</option>
+                    <label>Data d'aplicació: <span style="color:var(--danger);">*</span></label>
+                    <input type="date" name="data" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Parcel·la: <span style="color:var(--danger);">*</span></label>
+                    <select name="parcela_id" required>
+                        <option value="">Selecciona parcel·la</option>
                         <?php
-                        $sectors = $conn->query("SELECT id_sector FROM Sector_Cultiu ORDER BY id_sector");
-                        while ($s = $sectors->fetch_assoc()) {
-                            echo '<option value="' . $s['id_sector'] . '">Sector ' . $s['id_sector'] . '</option>';
+                        $parceles_t = $conn->query("SELECT id_parcela, nom FROM Parcel·la ORDER BY nom");
+                        while ($p_item = $parceles_t->fetch_assoc()) {
+                            echo '<option value="' . $p_item['id_parcela'] . '">' . htmlspecialchars($p_item['nom']) . '</option>';
                         }
                         ?>
                     </select>
                 </div>
 
                 <div class="form-group">
-                    <label>Fila (opcional):</label>
-                    <input type="number" name="id_fila" min="0">
-                </div>
-
-                <div class="form-group">
-                    <label>Producte:</label>
-                    <select name="id_producte" required>
+                    <label>Producte fitosanitari: <span style="color:var(--danger);">*</span></label>
+                    <select name="producte_id" required>
                         <option value="">Selecciona producte</option>
                         <?php
                         $prods = $conn->query("SELECT id_producte, nom_comercial FROM Producte ORDER BY nom_comercial");
@@ -183,93 +209,126 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Data i hora:</label>
-                    <input type="datetime-local" name="data_hora" required>
+                    <label>Dosi Aplicada (ex: L/ha o Kg/ha): <span style="color:var(--danger);">*</span></label>
+                    <input type="number" name="dosi" step="0.01" min="0" required placeholder="Ex. 12.5">
                 </div>
 
                 <div class="form-group">
-                    <label>Quantitat aplicada (L o Kg):</label>
-                    <input type="number" name="quantitat_aplicada" step="0.01" min="0" required>
+                    <label>Operari Aplicador / Carnet:</label>
+                    <input type="text" name="operari" placeholder="Nom operari o codi carnet">
                 </div>
 
                 <div class="form-group">
-                    <label>Mètode d'aplicació:</label>
-                    <input type="text" name="metode_aplicacio" placeholder="ex: Polvorització">
+                    <label>Maquinària / Equip:</label>
+                    <input type="text" name="maquina" placeholder="Ex. Tractor amb atomitzador ROMA">
+                </div>
+
+                <div class="form-group">
+                    <label>Termini de Seguretat (Dies):</label>
+                    <input type="number" name="termini_seguretat" min="0" value="0">
                 </div>
 
                 <div class="form-group full-width">
                     <label>Observacions:</label>
-                    <textarea name="observacions" rows="2"></textarea>
+                    <textarea name="observacions" rows="2" placeholder="Incidències meteorològiques o derivades..."></textarea>
                 </div>
             </div>
 
-            <button type="submit" class="btn" style="background:var(--info); color:#fff;"><i class="fa-solid fa-spray-can-sparkles"></i> Afegir tractament</button>
+            <button type="submit" class="btn" style="background:var(--info); color:#fff;"><i class="fa-solid fa-signature"></i> Desar registre oficial</button>
         </form>
     </div>
 
     <?php
-    if (isset($_POST['nou_aplicacio'])) {
-        $id_sector          = (int)($_POST['id_sector'] ?? 0);
-        $id_fila            = (int)($_POST['id_fila'] ?? 0);
-        $id_producte        = (int)($_POST['id_producte'] ?? 0);
-        $data_hora          = $_POST['data_hora'] ?? null;
-        $quantitat_aplicada = (float)($_POST['quantitat_aplicada'] ?? 0);
-        $metode_aplicacio   = trim($_POST['metode_aplicacio'] ?? '');
+    if (isset($_POST['nou_tractament_oficial'])) {
+        $data               = $_POST['data'] ?? null;
+        $parcela_id         = (int)($_POST['parcela_id'] ?? 0);
+        $producte_id        = (int)($_POST['producte_id'] ?? 0);
+        $dosi               = (float)($_POST['dosi'] ?? 0);
+        $operari            = trim($_POST['operari'] ?? '');
+        $maquina            = trim($_POST['maquina'] ?? '');
+        $termini_seguretat  = (int)($_POST['termini_seguretat'] ?? 0);
         $observacions       = trim($_POST['observacions'] ?? '');
 
-        if ($id_sector > 0 && $id_producte > 0 && $data_hora && $quantitat_aplicada > 0) {
-            $stmt = $conn->prepare("
-                INSERT INTO Aplicacio_Tractament 
-                (id_sector, id_fila, id_producte, data_hora, quantitat_aplicada, metode_aplicacio, observacions)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-            ");
-            $stmt->bind_param("iiisdss", $id_sector, $id_fila, $id_producte, $data_hora, $quantitat_aplicada, $metode_aplicacio, $observacions);
-            $stmt->execute();
-            $stmt->close();
-            $_SESSION['msg'] = "Aplicació de tractament registrada correctament!";
+        // LÍMIT SIMULAT DE DOSI
+        $limit_max = 50.00;
+
+        if ($parcela_id > 0 && $producte_id > 0 && $data && $dosi > 0) {
+            if ($dosi > $limit_max) {
+                $_SESSION['err'] = "REBUTJAT: La dosi introduïda ($dosi) assoleix límits de toxicitat i supera la barrera oficial legal de $limit_max permesos. Operació interrompuda per protocol CEE.";
+            } else {
+                $stmt = $conn->prepare("
+                    INSERT INTO TractamentsOficials 
+                    (data, parcela_id, producte_id, dosi, operari, maquina, termini_seguretat, observacions)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                ");
+                $stmt->bind_param("siidssis", $data, $parcela_id, $producte_id, $dosi, $operari, $maquina, $termini_seguretat, $observacions);
+                $stmt->execute();
+                $stmt->close();
+                $_SESSION['msg'] = "Registre afegit satisfactòriament al Quadern d'Explotació.";
+            }
         } else {
-            $_SESSION['err'] = "Sector, producte, data/hora i quantitat són obligatoris";
+            $_SESSION['err'] = "Dades incorrectes. Assegura't d'entrar la data, parcela, producte i dosi correctament.";
         }
+    }
+    
+    // Si estem en procés d'eliminar un tractament del quadern
+    if (isset($_GET['eliminar']) && $_GET['eliminar'] === 'tractament_oficial') {
+        $id_of = (int)$_GET['id'];
+        $conn->query("DELETE FROM TractamentsOficials WHERE id_tractament = $id_of");
+        $_SESSION['msg'] = "Registre esborrat correctament.";
+        // Simulem el refresc mitjançant el script frontend, perquè el redirect no falli per sortida output
+        echo "<script>window.location.href='?p=monitoratge_plagues';</script>";
+        exit;
     }
     ?>
 
-    <h3><i class="fa-solid fa-list-ul" style="margin-right:8px; color:var(--text-muted);"></i> Llistat d'aplicacions de tractament</h3>
+    <h3><i class="fa-solid fa-list-check" style="margin-right:8px; color:var(--text-muted);"></i> Vista global (Quadern d'Explotació)</h3>
     <?php
-    $aplicacions = $conn->query("
-        SELECT a.id_aplicacio, p.nom AS parcela, a.id_fila, a.data_hora, pr.nom_comercial AS producte, 
-               a.quantitat_aplicada, a.metode_aplicacio, a.observacions
-        FROM Aplicacio_Tractament a
-        JOIN Sector_Cultiu s ON a.id_sector = s.id_sector
-        JOIN Parcel·la p ON s.id_parcela = p.id_parcela
-        JOIN Producte pr ON a.id_producte = pr.id_producte
-        ORDER BY a.data_hora DESC
+    $tractaments = $conn->query("
+        SELECT t.id_tractament, t.data, parc.nom AS parcela_nom, pr.nom_comercial AS producte_nom, 
+               t.dosi, t.operari, t.maquina, t.termini_seguretat, t.observacions
+        FROM TractamentsOficials t
+        JOIN Parcel·la parc ON t.parcela_id = parc.id_parcela
+        JOIN Producte pr ON t.producte_id = pr.id_producte
+        ORDER BY t.data DESC, t.id_tractament DESC
     ");
-    if ($aplicacions->num_rows > 0):
+
+    if ($tractaments && $tractaments->num_rows > 0):
     ?>
         <div class="table-container">
             <table>
                 <tr>
-                    <th>ID</th>
+                    <th>Reg #</th>
+                    <th>Data</th>
                     <th>Parcel·la</th>
-                    <th>Fila</th>
-                    <th>Data/Hora</th>
                     <th>Producte</th>
-                    <th>Quantitat</th>
-                    <th>Mètode</th>
+                    <th>Dosi</th>
+                    <th>Operari / Màquina</th>
+                    <th>Termini Seg.</th>
+                    <th>Observacions</th>
                     <th>Acció</th>
                 </tr>
-                <?php while ($a = $aplicacions->fetch_assoc()): ?>
+                <?php while ($t = $tractaments->fetch_assoc()): ?>
                     <tr>
-                        <td><strong>#<?= $a['id_aplicacio'] ?></strong></td>
-                        <td><?= htmlspecialchars($a['parcela']) ?></td>
-                        <td><?= $a['id_fila'] ?: '-' ?></td>
-                        <td><?= $a['data_hora'] ?></td>
-                        <td><span class="badge badge-info"><?= htmlspecialchars($a['producte']) ?></span></td>
-                        <td><?= number_format($a['quantitat_aplicada'], 2) ?></td>
-                        <td><?= htmlspecialchars($a['metode_aplicacio'] ?? '-') ?></td>
+                        <td><strong>#<?= $t['id_tractament'] ?></strong></td>
+                        <td><span style="font-weight: 500;"><?= date('d/m/Y', strtotime($t['data'])) ?></span></td>
+                        <td><span class="badge badge-info"><i class="fa-solid fa-map-location"></i> <?= htmlspecialchars($t['parcela_nom']) ?></span></td>
+                        <td><span class="badge badge-secondary"><?= htmlspecialchars($t['producte_nom']) ?></span></td>
+                        <td><span class="badge badge-warning"><?= number_format($t['dosi'], 2) ?></span></td>
                         <td>
-                            <a href="?p=monitoratge_plagues&eliminar=aplicacio&id=<?= $a['id_aplicacio'] ?>"
-                               class="btn btn-red btn-icon" onclick="return confirm('Segur que vols eliminar aquesta aplicació?');" title="Eliminar">
+                            <small>Op: <?= htmlspecialchars($t['operari'] ?: '-') ?><br>Maq: <?= htmlspecialchars($t['maquina'] ?: '-') ?></small>
+                        </td>
+                        <td>
+                            <?php if ($t['termini_seguretat'] > 0): ?>
+                                <span style="color:var(--danger); font-weight: 600;"><i class="fa-solid fa-clock"></i> <?= $t['termini_seguretat'] ?> d</span>
+                            <?php else: ?>
+                                <span style="color:var(--text-muted);">0 dies</span>
+                            <?php endif; ?>
+                        </td>
+                        <td style="max-width: 150px;"><small><?= nl2br(htmlspecialchars($t['observacions'] ?? '-')) ?></small></td>
+                        <td>
+                            <a href="?p=monitoratge_plagues&eliminar=tractament_oficial&id=<?= $t['id_tractament'] ?>"
+                               class="btn btn-red btn-icon" onclick="return confirm('ATENCIÓ A L\'AUDITORIA: Voleu eliminar definitivament aquest registre oficial del Quadern?');" title="Esborrar registre">
                                 <i class="fa-solid fa-trash-can"></i>
                             </a>
                         </td>
@@ -278,9 +337,8 @@
             </table>
         </div>
     <?php else: ?>
-        <p style="color:var(--text-muted);"><i class="fa-solid fa-folder-open"></i> Encara no hi ha aplicacions de tractament.</p>
+        <p style="color:var(--text-muted);"><i class="fa-solid fa-folder-open"></i> El quadern d'explotació està completament buit.</p>
     <?php endif; ?>
-
 
     <hr style="border: 0; height: 1px; background: var(--border-color); margin: 40px 0;">
 

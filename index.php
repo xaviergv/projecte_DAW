@@ -113,7 +113,8 @@ include 'includes/header.php';
                         'monitoratge_plagues' => '<i class="fa-solid fa-bug" style="margin-right:10px; color:var(--primary);"></i> Tractaments i Plagues',
                         'sensors' => '<i class="fa-solid fa-tower-broadcast" style="margin-right:10px; color:var(--primary);"></i> Sensors i Alertes Intel·ligents',
                     'collites' => '<i class="fa-solid fa-wheat-awn" style="margin-right:10px; color:var(--primary);"></i> Registre de Collites',
-                    'lots' => '<i class="fa-solid fa-barcode" style="margin-right:10px; color:var(--primary);"></i> Traçabilitat de Lots'
+                    'lots' => '<i class="fa-solid fa-barcode" style="margin-right:10px; color:var(--primary);"></i> Traçabilitat de Lots',
+                    'dashboard' => '<i class="fa-solid fa-chart-pie" style="margin-right:10px; color:var(--primary);"></i> Anàlisi de Producció'
                     ];
                     echo $titols[$p] ?? 'Secció Desconeguda';
                     ?>
@@ -131,6 +132,7 @@ include 'includes/header.php';
                 case 'sensors': include 'modules/sensors.php'; break;
                 case 'collites': include 'modules/collites.php'; break;
                 case 'lots': include 'modules/lots.php'; break;
+                case 'dashboard': include 'modules/dashboard.php'; break;
                 default: 
                     echo '<div class="section">
                             <h2><i class="fa-solid fa-circle-exclamation"></i> Pàgina no trobada</h2>
