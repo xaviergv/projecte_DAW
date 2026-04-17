@@ -325,7 +325,7 @@
         $descripcio = trim($_POST['descripcio'] ?? '');
         $hores_estimades = (float)($_POST['hores_estimades'] ?? 0);
         if ($nom) {
-            $stmt = $conn->prepare("INSERT INTO Tasca (nom, descripcio, hores_estimades, estat) VALUES (?, ?, ?, 'Pendent')");
+            $stmt = $conn->prepare("INSERT INTO Tasca (nom, descripcio, hores_estimades, finalitzada) VALUES (?, ?, ?, 0)");
             $stmt->bind_param("ssd", $nom, $descripcio, $hores_estimades);
             $stmt->execute();
             $stmt->close();
@@ -337,7 +337,7 @@
         $id_tasca = (int)($_POST['id_tasca'] ?? 0);
         $id_treballador = (int)($_POST['id_treballador'] ?? 0);
         if ($id_tasca > 0 && $id_treballador > 0) {
-            $stmt = $conn->prepare("INSERT INTO Assignacio_Tasca (id_tasca, id_treballador, data_assignacio) VALUES (?, ?, CURDATE())");
+            $stmt = $conn->prepare("INSERT INTO Assignacio_Treballador_Tasca (id_tasca, id_treballador, es_cap_equip) VALUES (?, ?, 0)");
             $stmt->bind_param("ii", $id_tasca, $id_treballador);
             $stmt->execute();
             $stmt->close();
