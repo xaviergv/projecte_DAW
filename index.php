@@ -28,6 +28,10 @@ if (isset($_GET['eliminar'])) {
             case 'alerta':      $conn->query("DELETE FROM Alerta WHERE id_alerta = $id"); $_SESSION['msg'] = "Alerta eliminada!"; break;
             case 'collita':     $conn->query("DELETE FROM Collita WHERE id_collita = $id"); $_SESSION['msg'] = "Collita eliminada!"; break;
             case 'lot':         $conn->query("DELETE FROM Lot WHERE id_lot = $id"); $_SESSION['msg'] = "Lot eliminat!"; break;
+            case 'inventari':   $conn->query("DELETE FROM Inventari WHERE id_inventari = $id"); $_SESSION['msg'] = "Entrada d'inventari eliminada!"; break;
+            case 'tasca_gestio': $conn->query("DELETE FROM Hores_Treball WHERE tasca_id = $id"); $conn->query("DELETE FROM Tasques_Gestio WHERE id_tasca = $id"); $_SESSION['msg'] = "Tasca eliminada!"; break;
+            case 'hora_treball': $conn->query("DELETE FROM Hores_Treball WHERE id_hora = $id"); $_SESSION['msg'] = "Registre d'hores eliminat!"; break;
+            case 'qualitat':     $conn->query("DELETE FROM Qualitat_Fruita WHERE id_qualitat = $id"); $_SESSION['msg'] = "Control de qualitat eliminat!"; break;
         }
     }
 
@@ -109,11 +113,16 @@ include 'includes/header.php';
                         'parceles' => '<i class="fa-solid fa-map" style="margin-right:10px; color:var(--primary);"></i> Gestió de Parcel·les',
                         'cultius' => '<i class="fa-solid fa-seedling" style="margin-right:10px; color:var(--primary);"></i> Cultius i Sectors',
                         'personal' => '<i class="fa-solid fa-users" style="margin-right:10px; color:var(--primary);"></i> Recursos Humans',
+                        'tasques_hores' => '<i class="fa-solid fa-clipboard-check" style="margin-right:10px; color:var(--primary);"></i> Gestió de Tasques i Hores',
                         'productes' => '<i class="fa-solid fa-box-open" style="margin-right:10px; color:var(--primary);"></i> Productes Fitosanitaris i Estoc',
+                        'inventari' => '<i class="fa-solid fa-warehouse" style="margin-right:10px; color:var(--primary);"></i> Gestió d\'Inventari',
                         'monitoratge_plagues' => '<i class="fa-solid fa-bug" style="margin-right:10px; color:var(--primary);"></i> Tractaments i Plagues',
                         'sensors' => '<i class="fa-solid fa-tower-broadcast" style="margin-right:10px; color:var(--primary);"></i> Sensors i Alertes Intel·ligents',
+                    'alertes' => '<i class="fa-solid fa-shield-halved" style="margin-right:10px; color:var(--primary);"></i> Sistema d\'Alertes',
                     'collites' => '<i class="fa-solid fa-wheat-awn" style="margin-right:10px; color:var(--primary);"></i> Registre de Collites',
+                    'qualitat' => '<i class="fa-solid fa-microscope" style="margin-right:10px; color:var(--primary);"></i> Control de Qualitat de Fruita',
                     'lots' => '<i class="fa-solid fa-barcode" style="margin-right:10px; color:var(--primary);"></i> Traçabilitat de Lots',
+                    'mapa' => '<i class="fa-solid fa-earth-europe" style="margin-right:10px; color:var(--primary);"></i> Mapa de Parcel·les',
                     'dashboard' => '<i class="fa-solid fa-chart-pie" style="margin-right:10px; color:var(--primary);"></i> Anàlisi de Producció'
                     ];
                     echo $titols[$p] ?? 'Secció Desconeguda';
@@ -127,11 +136,16 @@ include 'includes/header.php';
                 case 'parceles': include 'modules/parcela.php'; break;
                 case 'cultius': include 'modules/cultius.php'; break;
                 case 'personal': include 'modules/personal.php'; break;
+                case 'tasques_hores': include 'modules/tasques_hores.php'; break;
                 case 'productes': include 'modules/productes.php'; break;
+                case 'inventari': include 'modules/inventari.php'; break;
                 case 'monitoratge_plagues': include 'modules/monitoratge_plagues.php'; break;
                 case 'sensors': include 'modules/sensors.php'; break;
+                case 'alertes': include 'modules/alertes.php'; break;
                 case 'collites': include 'modules/collites.php'; break;
+                case 'qualitat': include 'modules/qualitat.php'; break;
                 case 'lots': include 'modules/lots.php'; break;
+                case 'mapa': include 'modules/mapa.php'; break;
                 case 'dashboard': include 'modules/dashboard.php'; break;
                 default: 
                     echo '<div class="section">

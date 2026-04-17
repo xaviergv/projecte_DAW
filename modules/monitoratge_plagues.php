@@ -264,7 +264,72 @@ $conn->query("
                 $stmt->bind_param("siidssis", $data, $parcela_id, $producte_id, $dosi, $operari, $maquina, $termini_seguretat, $observacions);
                 $stmt->execute();
                 $stmt->close();
-                $_SESSION['msg'] = "Registre afegit satisfactòriament al Quadern d'Explotació.";
+
+                // ═══════════════════════════════════════════════════
+                // AUTO-SUBTRACCIÓ D'INVENTARI (FIFO — lots més antics primer)
+                // ═══════════════════════════════════════════════════
+                $quantitat_a_restar = $dosi;
+                $lots_afectats = [];
+                
+                // Crear taula Inventari si no existeix (per seguretat)
+                $conn->query("
+                    CREATE TABLE IF NOT EXISTS `Inventari` (
+                        `id_inventari` int(11) NOT NULL AUTO_INCREMENT,
+                        `producte_id`  int(11) NOT NULL,
+                        `quantitat`    decimal(10,2) NOT NULL DEFAULT 0.00,
+                        `unitat_mesura` varchar(20) NOT NULL DEFAULT 'L',
+                        `data_compra`  date DEFAULT NULL,
+                        `caducitat`    date DEFAULT NULL,
+                        `proveidor`    varchar(150) DEFAULT NULL,
+                        `preu_unitari` decimal(10,2) DEFAULT NULL,
+                        `numero_lot`   varchar(50) DEFAULT NULL,
+                        `ubicacio`     varchar(100) DEFAULT NULL,
+                        `observacions` text DEFAULT NULL,
+                        `created_at`   datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                        PRIMARY KEY (`id_inventari`),
+                        KEY `fk_inventari_producte` (`producte_id`)
+                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_spanish_ci
+                ");
+
+                // Obtenir lots actius d'aquest producte, de més antic a més nou (FIFO)
+                $lots_stmt = $conn->prepare("
+                    SELECT id_inventari, quantitat, numero_lot
+                    FROM Inventari
+                    WHERE producte_id = ? AND quantitat > 0
+                    ORDER BY data_compra ASC, id_inventari ASC
+                ");
+                $lots_stmt->bind_param("i", $producte_id);
+                $lots_stmt->execute();
+                $lots_result = $lots_stmt->get_result();
+
+                while ($lot = $lots_result->fetch_assoc()) {
+                    if ($quantitat_a_restar <= 0) break;
+
+                    $disponible = (float)$lot['quantitat'];
+                    $restar = min($disponible, $quantitat_a_restar);
+
+                    $nova_quantitat = $disponible - $restar;
+                    $update_stmt = $conn->prepare("UPDATE Inventari SET quantitat = ? WHERE id_inventari = ?");
+                    $update_stmt->bind_param("di", $nova_quantitat, $lot['id_inventari']);
+                    $update_stmt->execute();
+                    $update_stmt->close();
+
+                    $lot_nom = $lot['numero_lot'] ?: '#' . $lot['id_inventari'];
+                    $lots_afectats[] = "$lot_nom (-" . number_format($restar, 2) . ")";
+                    $quantitat_a_restar -= $restar;
+                }
+                $lots_stmt->close();
+
+                // Missatge de confirmació
+                $msg_extra = '';
+                if (count($lots_afectats) > 0) {
+                    $msg_extra = " 📦 Inventari actualitzat: " . implode(', ', $lots_afectats) . ".";
+                }
+                if ($quantitat_a_restar > 0) {
+                    $msg_extra .= " ⚠️ Atenció: falten " . number_format($quantitat_a_restar, 2) . " unitats per cobrir la dosi (stock insuficient).";
+                }
+
+                $_SESSION['msg'] = "Registre afegit satisfactòriament al Quadern d'Explotació." . $msg_extra;
             }
         } else {
             $_SESSION['err'] = "Dades incorrectes. Assegura't d'entrar la data, parcela, producte i dosi correctament.";
