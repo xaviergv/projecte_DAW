@@ -1198,3 +1198,70 @@ table tbody tr:hover { background: #f1f5f9; }
     .main-content { margin-left: 80px; padding: 20px; }
     .dashboard-grid { grid-template-columns: 1fr; }
 }
+
+
+/* ----------------------- LOGIN & REGISTER ----------------------- */
+body.login-page-body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: var(--bg-body);
+    margin: 0;
+}
+
+.login-container {
+    background: white;
+    padding: 30px;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+}
+
+.login-container h2 {
+    margin-bottom: 20px;
+    color: var(--primary);
+}
+
+.login-container .form-group {
+    margin-bottom: 15px;
+    text-align: left;
+}
+
+.btn-login {
+    width: 100%;
+    margin-top: 10px;
+}
+
+.error-msg {
+    color: var(--danger);
+    margin-bottom: 15px;
+    background: rgba(239, 68, 68, 0.1);
+    padding: 10px;
+    border-radius: var(--radius-md);
+}
+
+.success-msg {
+    color: #10b981;
+    margin-bottom: 15px;
+    background: rgba(16, 185, 129, 0.1);
+    padding: 10px;
+    border-radius: var(--radius-md);
+}
+
+.register-link {
+    margin-top: 15px;
+    display: block;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.95rem;
+}
+
+.register-link a {
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 500;
+}
+

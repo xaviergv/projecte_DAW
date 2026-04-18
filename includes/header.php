@@ -33,6 +33,16 @@
             <li><a href="?p=mapa" class="<?= $p === 'mapa' ? 'active' : '' ?>"><i class="fa-solid fa-earth-europe"></i> <span>Mapa</span></a></li>
             <li><a href="?p=dashboard" class="<?= $p === 'dashboard' ? 'active' : '' ?>"><i class="fa-solid fa-chart-pie"></i> <span>Estadístiques</span></a></li>
         </ul>
+        <div class="sidebar-footer" style="padding: 20px; border-top: 1px solid rgba(255,255,255,0.1); margin-top: auto;">
+            <?php if (isset($_SESSION['usuari_nom'])): ?>
+                <div style="color: #cbd5e1; margin-bottom: 10px; font-size: 0.9rem;">
+                    <i class="fa-solid fa-user"></i> <?= htmlspecialchars($_SESSION['usuari_nom']) ?>
+                </div>
+                <a href="logout.php" style="color: #f87171; text-decoration: none; display: block; font-size: 0.9rem;">
+                    <i class="fa-solid fa-right-from-bracket"></i> Tancar sessió
+                </a>
+            <?php endif; ?>
+        </div>
     </aside>
 
     <main class="main-content">

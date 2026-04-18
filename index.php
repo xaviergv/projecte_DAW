@@ -1,6 +1,12 @@
 <?php
 require_once 'config/db.php';
 
+// Comprovar si l'usuari està autenticat
+if (!isset($_SESSION['usuari_id'])) {
+    header("Location: login.php");
+    exit;
+}
+
 // Pestanya activa
 $p = $_GET['p'] ?? 'home';
 
