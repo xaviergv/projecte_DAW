@@ -1,5 +1,48 @@
 <div class="section">
-    <!-- AFEGIR NOU CULTIU -->
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <h3 style="margin:0;"><i class="fa-solid fa-seedling" style="color:var(--primary); margin-right:8px;"></i> Visió General de Cultius i Sectors</h3>
+    </div>
+
+    <!-- KPIs -->
+    <div class="dashboard-grid" style="margin-bottom: 30px;">
+        <div class="kpi-card">
+            <?php
+            $q_cultius = $conn->query("SELECT COUNT(*) AS t FROM Cultiu");
+            $total_cultius = $q_cultius ? $q_cultius->fetch_assoc()['t'] : 0;
+            ?>
+            <div class="kpi-icon" style="color:var(--success); background:rgba(16,185,129,0.1);"><i class="fa-solid fa-leaf"></i></div>
+            <div class="kpi-content">
+                <h3>Total Cultius</h3>
+                <p class="kpi-value"><?= $total_cultius ?></p>
+            </div>
+        </div>
+        <div class="kpi-card">
+            <?php
+            $q_sectors = $conn->query("SELECT COUNT(*) AS t FROM Sector_Cultiu");
+            $total_sectors = $q_sectors ? $q_sectors->fetch_assoc()['t'] : 0;
+            ?>
+            <div class="kpi-icon" style="color:var(--warning); background:rgba(245,158,11,0.1);"><i class="fa-solid fa-chart-pie"></i></div>
+            <div class="kpi-content">
+                <h3>Sectors Actius</h3>
+                <p class="kpi-value"><?= $total_sectors ?></p>
+            </div>
+        </div>
+        <div class="kpi-card">
+            <?php
+            $q_arbres = $conn->query("SELECT SUM(num_arbres) AS t FROM Sector_Cultiu");
+            $total_arbres = $q_arbres ? $q_arbres->fetch_assoc()['t'] : 0;
+            ?>
+            <div class="kpi-icon" style="color:var(--primary); background:rgba(14,165,233,0.1);"><i class="fa-solid fa-tree"></i></div>
+            <div class="kpi-content">
+                <h3>Total Arbres</h3>
+                <p class="kpi-value"><?= number_format((float)$total_arbres, 0, ',', '.') ?></p>
+            </div>
+        </div>
+    </div>
+
+    <div style="display:flex; gap:30px; flex-wrap:wrap;">
+        <div style="flex:1; min-width:300px;">
+            <!-- AFEGIR NOU CULTIU -->
     <div class="form-section">
         <h3><i class="fa-solid fa-circle-plus" style="color:var(--primary); margin-right:8px;"></i> Afegir nou cultiu</h3>
         <form method="post">
@@ -109,10 +152,122 @@
     <?php else: ?>
         <p style="color:var(--text-muted);"><i class="fa-solid fa-folder-open"></i> Encara no hi ha cultius registrats.</p>
     <?php endif; ?>
+        </div>
+    </div>
 
     <hr style="border: 0; height: 1px; background: var(--border-color); margin: 40px 0;">
 
-    <!-- AFEGIR NOU SECTOR -->
+    <div style="display:flex; gap:30px; flex-wrap:wrap;">
+        <div style="flex:1; min-width:300px;">
+            <!-- AFEGIR NOVA VARIETAT -->
+            <div class="form-section">
+                <h3><i class="fa-solid fa-seedling" style="color:var(--primary); margin-right:8px;"></i> Afegir nova varietat</h3>
+                <form method="post">
+                    <input type="hidden" name="p" value="cultius">
+                    <input type="hidden" name="nova_varietat" value="1">
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Cultiu Associat:</label>
+                            <select name="id_cultiu" required>
+                                <option value="">Selecciona cultiu</option>
+                                <?php
+                                $cultius_list = $conn->query("SELECT id_cultiu, nom_comu FROM Cultiu ORDER BY nom_comu");
+                                while ($c = $cultius_list->fetch_assoc()) {
+                                    echo '<option value="' . $c['id_cultiu'] . '">' . htmlspecialchars($c['nom_comu']) . '</option>';
+                                }
+                                ?>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Nom de la varietat:</label>
+                            <input type="text" name="nom_varietat" required placeholder="ex: Golden Delicious">
+                        </div>
+
+                        <div class="form-group full-width">
+                            <label>Característiques:</label>
+                            <textarea name="caracteristiques" rows="2" placeholder="ex: Pell groga, polpa cruixent..."></textarea>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn"><i class="fa-solid fa-plus"></i> Afegir varietat</button>
+                </form>
+            </div>
+
+            <?php
+            // Guardar nova varietat
+            if (isset($_POST['nova_varietat'])) {
+                $id_cultiu = (int)($_POST['id_cultiu'] ?? 0);
+                $nom_varietat = trim($_POST['nom_varietat'] ?? '');
+                $caracteristiques = trim($_POST['caracteristiques'] ?? '');
+
+                if ($id_cultiu > 0 && $nom_varietat) {
+                    $stmt = $conn->prepare("INSERT INTO Varietat (id_cultiu, nom_varietat, caracteristiques) VALUES (?, ?, ?)");
+                    $stmt->bind_param("iss", $id_cultiu, $nom_varietat, $caracteristiques);
+                    $stmt->execute();
+                    $stmt->close();
+                    $_SESSION['msg'] = "Varietat afegida correctament!";
+                } else {
+                    $_SESSION['err'] = "El cultiu i el nom de la varietat són obligatoris";
+                }
+            }
+            
+            // Eliminar varietat
+            if (isset($_GET['eliminar_varietat'])) {
+                $id = (int)$_GET['id'];
+                $conn->query("DELETE FROM Varietat WHERE id_varietat = $id");
+                $_SESSION['msg'] = "Varietat eliminada!";
+                echo "<script>window.location.href='index.php?p=cultius';</script>";
+                exit;
+            }
+            ?>
+
+            <!-- Llistat de varietats -->
+            <h3><i class="fa-solid fa-list-ul" style="margin-right:8px; color:var(--text-muted);"></i> Llistat de varietats</h3>
+            <?php
+            $varietats = $conn->query("
+                SELECT v.id_varietat, v.nom_varietat, v.caracteristiques, c.nom_comu AS cultiu 
+                FROM Varietat v 
+                JOIN Cultiu c ON v.id_cultiu = c.id_cultiu 
+                ORDER BY c.nom_comu, v.nom_varietat
+            ");
+            if ($varietats->num_rows > 0):
+            ?>
+                <div class="table-container" style="max-height: 400px; overflow-y: auto;">
+                    <table>
+                        <tr>
+                            <th>ID</th>
+                            <th>Cultiu</th>
+                            <th>Varietat</th>
+                            <th>Característiques</th>
+                            <th>Acció</th>
+                        </tr>
+                        <?php while ($v = $varietats->fetch_assoc()): ?>
+                            <tr>
+                                <td><strong>#<?= $v['id_varietat'] ?></strong></td>
+                                <td><span class="badge badge-info"><?= htmlspecialchars($v['cultiu']) ?></span></td>
+                                <td><?= htmlspecialchars($v['nom_varietat']) ?></td>
+                                <td><small><?= htmlspecialchars($v['caracteristiques'] ?? '-') ?></small></td>
+                                <td>
+                                    <a href="?p=cultius&eliminar_varietat=1&id=<?= $v['id_varietat'] ?>"
+                                       class="btn btn-red btn-icon" onclick="return confirm('Segur que vols eliminar aquesta varietat?');" title="Eliminar">
+                                        <i class="fa-solid fa-trash-can"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        <?php endwhile; ?>
+                    </table>
+                </div>
+            <?php else: ?>
+                <p style="color:var(--text-muted);"><i class="fa-solid fa-folder-open"></i> Encara no hi ha varietats registrades.</p>
+            <?php endif; ?>
+        </div>
+    </div>
+
+    <div style="display:flex; gap:30px; flex-wrap:wrap;">
+        <div style="flex:1; min-width:300px;">
+            <!-- AFEGIR NOU SECTOR -->
     <div class="form-section">
         <h3><i class="fa-solid fa-chart-pie" style="color:var(--warning); margin-right:8px;"></i> Afegir nou sector</h3>
         <form method="post">
@@ -258,4 +413,6 @@
     <?php else: ?>
         <p style="color:var(--text-muted);"><i class="fa-solid fa-folder-open"></i> Encara no hi ha sectors registrats.</p>
     <?php endif; ?>
+        </div>
+    </div>
 </div>

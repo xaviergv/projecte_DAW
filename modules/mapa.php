@@ -13,8 +13,10 @@ $total_superficie = $conn->query("SELECT COALESCE(SUM(superficie),0) as t FROM `
 // Preparar markers per JS
 $markers = [];
 while ($pr = $parceles_mapa->fetch_assoc()) {
-    if (preg_match('/^(-?\d+\.?\d*)\s*,\s*(-?\d+\.?\d*)$/', trim($pr['coordenades']), $m)) {
+    $c = trim($pr['coordenades']);
+    if (preg_match('/^(-?\d+\.?\d*)\s*,\s*(-?\d+\.?\d*)$/', $c, $m)) {
         $markers[] = [
+            'type'       => 'marker',
             'lat'        => (float)$m[1],
             'lon'        => (float)$m[2],
             'nom'        => $pr['nom'],
@@ -23,6 +25,24 @@ while ($pr = $parceles_mapa->fetch_assoc()) {
             'cultius'    => (int)$pr['num_cultius'],
             'id'         => (int)$pr['id_parcela']
         ];
+    }
+    else if (strpos($c, '[') === 0) {
+        $arr = json_decode($c, true);
+        if (is_array($arr) && count($arr) > 0) {
+            $sumLat = 0; $sumLon = 0;
+            foreach ($arr as $pt) { $sumLat += (float)$pt[0]; $sumLon += (float)$pt[1]; }
+            $markers[] = [
+                'type'       => 'polygon',
+                'lat'        => $sumLat / count($arr),
+                'lon'        => $sumLon / count($arr),
+                'coords'     => $arr,
+                'nom'        => $pr['nom'],
+                'superficie' => (float)$pr['superficie'],
+                'textura'    => $pr['textura'] ?? '-',
+                'cultius'    => (int)$pr['num_cultius'],
+                'id'         => (int)$pr['id_parcela']
+            ];
+        }
     }
 }
 $markers_json = json_encode($markers);
@@ -240,6 +260,13 @@ $markers_json = json_encode($markers);
                     '</a>' +
                 '</div>' +
             '</div>';
+
+        if (p.type === 'polygon' && p.coords) {
+            var poly = L.polygon(p.coords, {color: (p.cultius > 0 ? '#10b981' : '#f59e0b'), weight: 3, fillOpacity: 0.2})
+                .bindPopup(popupContent, { maxWidth: 280, className: 'custom-popup' });
+            poly._parcelData = p;
+            markersGroup.addLayer(poly);
+        }
 
         var marker = L.marker([p.lat, p.lon], { icon: icon })
             .bindPopup(popupContent, { maxWidth: 280, className: 'custom-popup' });

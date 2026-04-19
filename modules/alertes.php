@@ -12,9 +12,9 @@ function comprovarEstocBaix(mysqli $conn): array {
     $alertes = [];
     $sql = "
         SELECT p.id_producte, p.nom_comercial, p.quantitat_minima,
-               COALESCE(SUM(e.quantitat_disponible), 0) AS estoc_total
+               COALESCE(SUM(i.quantitat), 0) AS estoc_total
         FROM Producte p
-        LEFT JOIN Estoc e ON p.id_producte = e.id_producte
+        LEFT JOIN Inventari i ON p.id_producte = i.producte_id
         GROUP BY p.id_producte
         HAVING estoc_total < p.quantitat_minima
         ORDER BY estoc_total ASC
@@ -34,7 +34,7 @@ function comprovarEstocBaix(mysqli $conn): array {
                     number_format($row['estoc_total'], 2),
                     number_format($row['quantitat_minima'], 2)
                 ),
-                'accio'   => '?p=productes',
+                'accio'   => '?p=inventari',
                 'accio_text' => 'Gestionar estoc'
             ];
         }
@@ -51,14 +51,14 @@ function comprovarCaducitats(mysqli $conn): array {
     $limit = date('Y-m-d', strtotime('+30 days'));
 
     $sql = "
-        SELECT e.id_estoc, p.nom_comercial, e.data_caducitat, e.quantitat_disponible, e.unitat_mesura,
-               DATEDIFF(e.data_caducitat, CURDATE()) AS dies_restants
-        FROM Estoc e
-        JOIN Producte p ON e.id_producte = p.id_producte
-        WHERE e.data_caducitat IS NOT NULL
-          AND e.data_caducitat <= ?
-          AND e.quantitat_disponible > 0
-        ORDER BY e.data_caducitat ASC
+        SELECT i.id_inventari, p.nom_comercial, i.caducitat AS data_caducitat, i.quantitat AS quantitat_disponible, i.unitat_mesura,
+               DATEDIFF(i.caducitat, CURDATE()) AS dies_restants
+        FROM Inventari i
+        JOIN Producte p ON i.producte_id = p.id_producte
+        WHERE i.caducitat IS NOT NULL
+          AND i.caducitat <= ?
+          AND i.quantitat > 0
+        ORDER BY i.caducitat ASC
     ";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("s", $limit);
@@ -94,8 +94,8 @@ function comprovarCaducitats(mysqli $conn): array {
                 $text_dies,
                 date('d/m/Y', strtotime($row['data_caducitat']))
             ),
-            'accio'   => '?p=productes',
-            'accio_text' => 'Veure estoc'
+            'accio'   => '?p=inventari',
+            'accio_text' => 'Veure inventari'
         ];
     }
     $stmt->close();
@@ -186,7 +186,9 @@ function comprovarAlertesSensors(mysqli $conn): array {
                 'titol'   => 'Alerta sensor: ' . htmlspecialchars($row['tipus_alerta']),
                 'missatge'=> htmlspecialchars($row['missatge']) . ' <small>(' . date('d/m/Y H:i', strtotime($row['data_generada'])) . ')</small>',
                 'accio'   => '?p=sensors',
-                'accio_text' => 'Veure sensors'
+                'accio_text' => 'Veure sensors',
+                'accio_resol' => '?resoldre_alerta=1&id='.$row['id_alerta'].'&p=alertes',
+                'accio_resol_text' => 'Marcar com a resolta'
             ];
         }
     }
@@ -392,9 +394,16 @@ if ($filtre_tipus !== 'tots') {
                                 echo $tipus_icons[$alerta['tipus']] ?? $alerta['tipus'];
                                 ?>
                             </span>
-                            <a href="<?= $alerta['accio'] ?>" class="alerta-accio-btn" style="color:<?= $cfg['color'] ?>; border-color:<?= $cfg['border'] ?>;">
-                                <?= $alerta['accio_text'] ?> <i class="fa-solid fa-arrow-right" style="font-size:0.75rem;"></i>
-                            </a>
+                            <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                                <?php if (!empty($alerta['accio_resol'])): ?>
+                                    <a href="<?= $alerta['accio_resol'] ?>" class="alerta-accio-btn" style="color:#fff; background:var(--success); border-color:var(--success);">
+                                        <i class="fa-solid fa-check"></i> <?= $alerta['accio_resol_text'] ?>
+                                    </a>
+                                <?php endif; ?>
+                                <a href="<?= $alerta['accio'] ?>" class="alerta-accio-btn" style="color:<?= $cfg['color'] ?>; border-color:<?= $cfg['border'] ?>;">
+                                    <?= $alerta['accio_text'] ?> <i class="fa-solid fa-arrow-right" style="font-size:0.75rem;"></i>
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>

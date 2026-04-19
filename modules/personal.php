@@ -160,135 +160,31 @@
 
     <hr style="border: 0; height: 1px; background: var(--border-color); margin: 40px 0;">
 
-    <div class="form-grid" style="gap:30px;">
-        <!-- 3. Tasca -->
-        <div class="form-section" style="margin-bottom:0;">
-            <h3><i class="fa-solid fa-clipboard-list" style="color:var(--primary); margin-right:8px;"></i> Afegir nova tasca</h3>
-            <form method="post">
-                <input type="hidden" name="p" value="personal">
-                <input type="hidden" name="nou_tasca" value="1">
-
-                <div class="form-group">
-                    <label>Nom de la tasca:</label>
-                    <input type="text" name="nom" required>
-                </div>
-
-                <div class="form-group" style="margin-top:15px;">
-                    <label>Hores estimades:</label>
-                    <input type="number" name="hores_estimades" step="0.5">
-                </div>
-
-                <div class="form-group full-width" style="margin-top:15px;">
-                    <label>Descripció:</label>
-                    <textarea name="descripcio" rows="2"></textarea>
-                </div>
-
-                <button type="submit" class="btn" style="margin-top:20px;"><i class="fa-solid fa-plus"></i> Crear tasca</button>
-            </form>
+    <div class="dashboard-grid" style="margin-bottom: 30px;">
+        <div class="kpi-card">
+            <?php
+            $q_trebs = $conn->query("SELECT COUNT(*) AS t FROM Treballador WHERE actiu = 1");
+            $trebs_actius = $q_trebs ? $q_trebs->fetch_assoc()['t'] : 0;
+            ?>
+            <div class="kpi-icon" style="color:var(--info); background:rgba(59,130,246,0.1);"><i class="fa-solid fa-users"></i></div>
+            <div class="kpi-content">
+                <h3>Treballadors Actius</h3>
+                <p class="kpi-value"><?= $trebs_actius ?></p>
+            </div>
         </div>
-
-        <!-- 4. Assignació -->
-        <div class="form-section" style="margin-bottom:0;">
-            <h3><i class="fa-solid fa-user-tag" style="color:var(--info); margin-right:8px;"></i> Assignar tasca</h3>
-            <form method="post">
-                <input type="hidden" name="p" value="personal">
-                <input type="hidden" name="nou_assignacio" value="1">
-
-                <div class="form-group">
-                    <label>Tasca:</label>
-                    <select name="id_tasca" required>
-                        <option value="">Selecciona tasca</option>
-                        <?php
-                        $tasques = $conn->query("SELECT id_tasca, nom FROM Tasca ORDER BY nom");
-                        while ($t = $tasques->fetch_assoc()) {
-                            echo '<option value="' . $t['id_tasca'] . '">' . htmlspecialchars($t['nom']) . '</option>';
-                        }
-                        ?>
-                    </select>
-                </div>
-
-                <div class="form-group" style="margin-top:15px;">
-                    <label>Treballador:</label>
-                    <select name="id_treballador" required>
-                        <option value="">Selecciona treballador</option>
-                        <?php
-                        $treballadors = $conn->query("SELECT id_treballador, CONCAT(nom, ' ', cognoms) AS nom FROM Treballador ORDER BY cognoms");
-                        while ($t = $treballadors->fetch_assoc()) {
-                            echo '<option value="' . $t['id_treballador'] . '">' . htmlspecialchars($t['nom']) . '</option>';
-                        }
-                        ?>
-                    </select>
-                </div>
-
-                <button type="submit" class="btn" style="background:var(--info); color:#fff; margin-top:20px;"><i class="fa-solid fa-link"></i> Assignar</button>
-            </form>
+        <div class="kpi-card">
+            <?php
+            $q_abs = $conn->query("SELECT COUNT(*) AS t FROM Absencia WHERE data_fi >= CURDATE() OR data_fi IS NULL");
+            $abs_actives = $q_abs ? $q_abs->fetch_assoc()['t'] : 0;
+            ?>
+            <div class="kpi-icon" style="color:var(--danger); background:rgba(239,68,68,0.1);"><i class="fa-solid fa-user-minus"></i></div>
+            <div class="kpi-content">
+                <h3>Absències Actives</h3>
+                <p class="kpi-value"><?= $abs_actives ?></p>
+            </div>
         </div>
     </div>
 
-    <hr style="border: 0; height: 1px; background: var(--border-color); margin: 40px 0;">
-
-    <!-- 5. Fitxatge -->
-    <div class="form-section">
-        <h3><i class="fa-solid fa-fingerprint" style="color:var(--primary-dark); margin-right:8px;"></i> Registrar Fitxatge</h3>
-        <form method="post">
-            <input type="hidden" name="p" value="personal">
-            <input type="hidden" name="nou_fitxatge" value="1">
-
-            <div class="form-grid">
-                <div class="form-group">
-                    <label>Treballador:</label>
-                    <select name="id_treballador" required>
-                        <option value="">Selecciona treballador</option>
-                        <?php
-                        $treb = $conn->query("SELECT id_treballador, CONCAT(nom, ' ', cognoms) AS nom FROM Treballador ORDER BY cognoms");
-                        while ($t = $treb->fetch_assoc()) {
-                            echo '<option value="' . $t['id_treballador'] . '">' . htmlspecialchars($t['nom']) . '</option>';
-                        }
-                        ?>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label>Tasca (opcional):</label>
-                    <select name="id_tasca">
-                        <option value="">Sense tasca</option>
-                        <?php
-                        $tasques = $conn->query("SELECT id_tasca, nom FROM Tasca ORDER BY nom");
-                        while ($t = $tasques->fetch_assoc()) {
-                            echo '<option value="' . $t['id_tasca'] . '">' . htmlspecialchars($t['nom']) . '</option>';
-                        }
-                        ?>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label>Entrada (Data i hora):</label>
-                    <input type="datetime-local" name="data_hora_entrada" required>
-                </div>
-
-                <div class="form-group">
-                    <label>Sortida (opcional):</label>
-                    <input type="datetime-local" name="data_hora_sortida">
-                </div>
-
-                <div class="form-group">
-                    <label>Latitud:</label>
-                    <input type="text" name="latitud" placeholder="ex: 41.6328570">
-                </div>
-
-                <div class="form-group">
-                    <label>Longitud:</label>
-                    <input type="text" name="longitud" placeholder="ex: 0.8012350">
-                </div>
-
-                <div class="form-group full-width">
-                    <label>Observacions:</label>
-                    <textarea name="observacions" rows="2"></textarea>
-                </div>
-            </div>
-
-            <button type="submit" class="btn" style="background:var(--primary-dark);"><i class="fa-solid fa-fingerprint"></i> Registrar fitxatge</button>
-        </form>
     <?php
     if (isset($_POST['nou_treballador'])) {
         $nif = trim($_POST['nif'] ?? '');
@@ -301,6 +197,7 @@
             $stmt->execute();
             $stmt->close();
             $_SESSION['msg'] = "Treballador afegit correctament!";
+            echo "<script>window.location.href='index.php?p=personal';</script>";
         } else {
             $_SESSION['err'] = "L'NIF, nom i cognoms són obligatoris";
         }
@@ -317,55 +214,7 @@
             $stmt->execute();
             $stmt->close();
             $_SESSION['msg'] = "Absència registrada correctament!";
-        }
-    }
-
-    if (isset($_POST['nou_tasca'])) {
-        $nom = trim($_POST['nom'] ?? '');
-        $descripcio = trim($_POST['descripcio'] ?? '');
-        $hores_estimades = (float)($_POST['hores_estimades'] ?? 0);
-        if ($nom) {
-            $stmt = $conn->prepare("INSERT INTO Tasca (nom, descripcio, hores_estimades, finalitzada) VALUES (?, ?, ?, 0)");
-            $stmt->bind_param("ssd", $nom, $descripcio, $hores_estimades);
-            $stmt->execute();
-            $stmt->close();
-            $_SESSION['msg'] = "Tasca creada correctament!";
-        }
-    }
-
-    if (isset($_POST['nou_assignacio'])) {
-        $id_tasca = (int)($_POST['id_tasca'] ?? 0);
-        $id_treballador = (int)($_POST['id_treballador'] ?? 0);
-        if ($id_tasca > 0 && $id_treballador > 0) {
-            $stmt = $conn->prepare("INSERT INTO Assignacio_Treballador_Tasca (id_tasca, id_treballador, es_cap_equip) VALUES (?, ?, 0)");
-            $stmt->bind_param("ii", $id_tasca, $id_treballador);
-            $stmt->execute();
-            $stmt->close();
-            $_SESSION['msg'] = "Treballador assignat correctament a la tasca!";
-        }
-    }
-
-    if (isset($_POST['nou_fitxatge'])) {
-        $id_treballador   = (int)($_POST['id_treballador'] ?? 0);
-        $data_hora_entrada = $_POST['data_hora_entrada'] ?? null;
-        $data_hora_sortida = !empty($_POST['data_hora_sortida']) ? $_POST['data_hora_sortida'] : null;
-        $latitud          = trim($_POST['latitud'] ?? '');
-        $longitud         = trim($_POST['longitud'] ?? '');
-        $id_tasca         = (int)($_POST['id_tasca'] ?? 0);
-        $observacions     = trim($_POST['observacions'] ?? '');
-
-        if ($id_treballador > 0 && $data_hora_entrada) {
-            $stmt = $conn->prepare("
-                INSERT INTO Fitxatge 
-                (id_treballador, data_hora_entrada, data_hora_sortida, latitud, longitud, id_tasca, observacions)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-            ");
-            $stmt->bind_param("isssdis", $id_treballador, $data_hora_entrada, $data_hora_sortida, $latitud, $longitud, $id_tasca, $observacions);
-            $stmt->execute();
-            $stmt->close();
-            $_SESSION['msg'] = "Fitxatge registrat correctament!";
-        } else {
-            $_SESSION['err'] = "Treballador i data/hora d'entrada són obligatoris";
+            echo "<script>window.location.href='index.php?p=personal';</script>";
         }
     }
     ?>

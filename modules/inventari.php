@@ -139,11 +139,126 @@ if (isset($_GET['editar']) && (int)$_GET['editar'] > 0) {
 ?>
 
 <div class="section">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <h3 style="margin:0;"><i class="fa-solid fa-boxes-stacked" style="color:var(--primary); margin-right:8px;"></i> Gestió de Productes i Inventari</h3>
+    </div>
 
     <!-- ══════════════════════════════════════════ -->
-    <!--  1. RESUM STOCK ACTUAL PER PRODUCTE       -->
+    <!--  1. PRODUCTES (Catàleg Mestre)            -->
     <!-- ══════════════════════════════════════════ -->
-    <h3><i class="fa-solid fa-warehouse" style="color:var(--primary); margin-right:8px;"></i> Stock actual per producte</h3>
+    
+    <!-- Formulari per Afegir Nou Producte -->
+    <div class="form-section">
+        <h3 style="margin-top:0;"><i class="fa-solid fa-box" style="color:var(--primary); margin-right:8px;"></i> Afegir Nou Producte (Catàleg)</h3>
+        <form method="post">
+            <input type="hidden" name="p" value="inventari">
+            <input type="hidden" name="nou_producte" value="1">
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Nom comercial:</label>
+                    <input type="text" name="nom_comercial" required placeholder="ex: Cobrex 50">
+                </div>
+                <div class="form-group">
+                    <label>Tipus:</label>
+                    <select name="tipus" required>
+                        <option value="">Selecciona</option>
+                        <option value="Fertilitzant">Fertilitzant</option>
+                        <option value="Insecticida">Insecticida</option>
+                        <option value="Fungicida">Fungicida</option>
+                        <option value="Herbicida">Herbicida</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Dosi recomanada:</label>
+                    <input type="text" name="dosi_recomanada" required placeholder="ex: 2 L/ha">
+                </div>
+                <div class="form-group">
+                    <label>Avís Mínim (Quantitat):</label>
+                    <input type="number" name="quantitat_minima" step="0.01" min="0" value="10" required>
+                </div>
+            </div>
+
+            <button type="submit" class="btn"><i class="fa-solid fa-plus"></i> Guardar a la base de dades</button>
+        </form>
+        <?php
+        // Guardar producte
+        if (isset($_POST['nou_producte'])) {
+            $nom_comercial = trim($_POST['nom_comercial'] ?? '');
+            $tipus = trim($_POST['tipus'] ?? '');
+            $dosi_recomanada = trim($_POST['dosi_recomanada'] ?? '');
+            $quantitat_minima = (float)($_POST['quantitat_minima'] ?? 0);
+
+            if ($nom_comercial && $tipus) {
+                $stmt = $conn->prepare("INSERT INTO Producte (nom_comercial, tipus, dosi_recomanada, quantitat_minima) VALUES (?, ?, ?, ?)");
+                $stmt->bind_param("sssd", $nom_comercial, $tipus, $dosi_recomanada, $quantitat_minima);
+                $stmt->execute();
+                $stmt->close();
+                $_SESSION['msg'] = "Producte creat al catàleg!";
+                echo "<script>window.location.href='index.php?p=inventari';</script>";
+            }
+        }
+        if (isset($_GET['eliminar_producte'])) {
+            $id_del_p = (int)$_GET['id'];
+            $conn->query("DELETE FROM Producte WHERE id_producte = $id_del_p");
+            $_SESSION['msg'] = "Producte i estoc relacionat eliminats!";
+            echo "<script>window.location.href='index.php?p=inventari';</script>";
+            exit;
+        }
+        ?>
+    </div>
+
+    <!-- Llista Productes (Format Targeta Més Elegant) -->
+    <h3 style="margin-top:40px;"><i class="fa-solid fa-book-open" style="color:var(--text-muted); margin-right:8px;"></i> Llistat del catàleg</h3>
+    <?php
+    $productes = $conn->query("SELECT id_producte, nom_comercial, tipus, dosi_recomanada, quantitat_minima FROM Producte ORDER BY nom_comercial");
+    if ($productes->num_rows > 0):
+    ?>
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px;">
+            <?php while ($pr = $productes->fetch_assoc()): 
+                $bdg = 'badge-secondary';
+                $icon = 'fa-flask';
+                $color = 'var(--text-muted)';
+                $bg = 'rgba(0,0,0,0.05)';
+                if($pr['tipus'] == 'Fertilitzant') { $bdg = 'badge-success'; $icon = 'fa-leaf'; $color = 'var(--success)'; $bg = 'rgba(16,185,129,0.1)'; }
+                if($pr['tipus'] == 'Insecticida') { $bdg = 'badge-danger'; $icon = 'fa-bug'; $color = 'var(--danger)'; $bg = 'rgba(239,68,68,0.1)'; }
+                if($pr['tipus'] == 'Fungicida') { $bdg = 'badge-info'; $icon = 'fa-certificate'; $color = 'var(--info)'; $bg = 'rgba(59,130,246,0.1)'; }
+                if($pr['tipus'] == 'Herbicida') { $bdg = 'badge-warning'; $icon = 'fa-seedling'; $color = 'var(--warning)'; $bg = 'rgba(245,158,11,0.1)'; }
+            ?>
+                <div class="kpi-card" style="position:relative; align-items:flex-start; padding:20px;">
+                    <div style="position:absolute; top:15px; right:15px;">
+                        <a href="?p=inventari&eliminar_producte=1&id=<?= $pr['id_producte'] ?>"
+                           class="btn btn-red btn-icon" style="padding:5px 9px; font-size:0.85rem;" 
+                           onclick="return confirm('Segur? Això eliminarà aquest producte i SENSE POSSIBLE RECUPERACIÓ tot el seu inventari.');" 
+                           title="Eliminar del catàleg">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </a>
+                    </div>
+                    <div class="kpi-icon" style="color:<?= $color ?>; background:<?= $bg ?>; margin-right:15px;">
+                        <i class="fa-solid <?= $icon ?>"></i>
+                    </div>
+                    <div class="kpi-content" style="flex:1;">
+                        <h4 style="margin:0 0 5px 0; font-size:1.1rem; color:var(--text);"><?= htmlspecialchars($pr['nom_comercial']) ?></h4>
+                        <span class="badge <?= $bdg ?>" style="font-size:0.75rem; margin-bottom:12px; display:inline-block;"><?= htmlspecialchars($pr['tipus']) ?></span>
+                        
+                        <div style="font-size:0.85rem; color:var(--text-muted); display:flex; flex-direction:column; gap:6px;">
+                            <div><i class="fa-solid fa-droplet" style="width:16px;"></i> Dosi: <strong style="color:var(--text);"><?= htmlspecialchars($pr['dosi_recomanada']) ?></strong></div>
+                            <div><i class="fa-solid fa-bell" style="width:16px;"></i> Avisar quan quedi: <strong style="color:var(--text);"><?= number_format($pr['quantitat_minima'], 2) ?></strong></div>
+                        </div>
+                    </div>
+                </div>
+            <?php endwhile; ?>
+        </div>
+    <?php else: ?>
+        <p style="color:var(--text-muted);"><i class="fa-solid fa-folder-open"></i> El catàleg està buit actualment.</p>
+    <?php endif; ?>
+
+    <hr style="border: 0; height: 1px; background: var(--border-color); margin: 40px 0;">
+
+    <!-- ══════════════════════════════════════════ -->
+    <!--  2. RESUM STOCK ACTUAL LÍQUID             -->
+    <!-- ══════════════════════════════════════════ -->
+    <h3><i class="fa-solid fa-warehouse" style="color:var(--primary); margin-right:8px;"></i> Estat de l'estoc als magatzems</h3>
     
     <?php if ($stock_resum && $stock_resum->num_rows > 0): ?>
         <div class="inventari-stock-grid">
@@ -210,7 +325,7 @@ if (isset($_GET['editar']) && (int)$_GET['editar'] > 0) {
     <hr style="border: 0; height: 1px; background: var(--border-color); margin: 40px 0;">
 
     <!-- ══════════════════════════════════════════ -->
-    <!--  2. FORMULARI CREATE / UPDATE              -->
+    <!--  3. FORMULARI CREATE / UPDATE INVENTARI   -->
     <!-- ══════════════════════════════════════════ -->
     <div class="form-section">
         <?php if ($editant): ?>
@@ -323,7 +438,7 @@ if (isset($_GET['editar']) && (int)$_GET['editar'] > 0) {
     </div>
 
     <!-- ══════════════════════════════════════════ -->
-    <!--  3. LLISTAT COMPLET D'INVENTARI (READ)    -->
+    <!--  4. LLISTAT COMPLET D'INVENTARI (READ)    -->
     <!-- ══════════════════════════════════════════ -->
     <h3><i class="fa-solid fa-clipboard-list" style="margin-right:8px; color:var(--text-muted);"></i> Registre complet d'inventari</h3>
     <?php

@@ -6,35 +6,95 @@
             <input type="hidden" name="p" value="parceles">
             <input type="hidden" name="nou_parcela" value="1">
 
-            <div class="form-grid">
-                <div class="form-group">
-                    <label>Nom de la parcel·la:</label>
-                    <input type="text" name="nom" required placeholder="ex: Can Xifra">
+            <div style="display:flex; flex-wrap:wrap; gap:30px; margin-top:20px;">
+                <!-- Dades de camp (esquerra) -->
+                <div style="flex:1; min-width:300px; display:flex; flex-direction:column; gap:20px;">
+                    <div class="form-group">
+                        <label>Nom de la parcel·la:</label>
+                        <input type="text" name="nom" required placeholder="ex: Can Xifra">
+                    </div>
+                    <div class="form-group">
+                        <label>Superfície (ha):</label>
+                        <input type="number" name="superficie" step="0.01" min="0" required placeholder="ex: 2.5">
+                    </div>
+                    <div class="form-group">
+                        <label>Textura del sòl:</label>
+                        <select name="textura">
+                            <option value="">Selecciona</option>
+                            <option value="Argilosa">Argilosa</option>
+                            <option value="Franca">Franca</option>
+                            <option value="Arenosa">Arenosa</option>
+                            <option value="Llimosa">Llimosa</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Coordenades detectades:</label>
+                        <input type="text" name="coordenades" id="coordInput" placeholder="S'omplirà automàticament des del mapa..." readonly style="background:#f1f5f9; color:var(--text-muted); font-size:0.85rem;">
+                    </div>
+                    <div style="margin-top:auto; padding-top:10px;">
+                        <button type="submit" class="btn" style="width:100%; justify-content:center;"><i class="fa-solid fa-plus"></i> Guardar nova parcel·la</button>
+                    </div>
                 </div>
 
-                <div class="form-group">
-                    <label>Superfície (ha):</label>
-                    <input type="number" name="superficie" step="0.01" min="0" required placeholder="ex: 2.5">
-                </div>
+                <!-- Mapa interactiu (dreta) -->
+                <div style="flex:1.5; min-width:350px;">
+                    <label style="display:block; margin-bottom:8px; font-weight:600;"><i class="fa-solid fa-earth-europe" style="color:var(--primary);"></i> Ubicació de la Finca</label>
+                    
+                    <!-- Leaflet CSS & JS -->
+                    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+                    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+                    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css"/>
+                    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+                    
+                    <div id="mapParcela" style="height: 380px; width: 100%; border-radius: 12px; border: 2px solid var(--border-color); box-shadow:0 4px 6px rgba(0,0,0,0.05); margin-bottom: 10px; z-index: 1;"></div>
+                    <small style="color:var(--text-muted); display:inline-block; margin-top:5px; line-height:1.4;"><i class="fa-solid fa-paintbrush" style="color:var(--primary);"></i> Utilitza la barra d'eines del mapa a l'esquerra per dibuixar directament un Rectangle o Polígon sobre el camp, o clica el marcador puntual.</small>
 
-                <div class="form-group">
-                    <label>Coordenades (lat, lon):</label>
-                    <input type="text" name="coordenades" placeholder="ex: 41.3851, 2.1734">
-                </div>
+                    <script>
+                    document.addEventListener("DOMContentLoaded", function() {
+                        var map = L.map('mapParcela').setView([41.5, 1.5], 8);
+                        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                            attribution: '&copy; OpenStreetMap contributors'
+                        }).addTo(map);
 
-                <div class="form-group">
-                    <label>Textura del sòl:</label>
-                    <select name="textura">
-                        <option value="">Selecciona</option>
-                        <option value="Argilosa">Argilosa</option>
-                        <option value="Franca">Franca</option>
-                        <option value="Arenosa">Arenosa</option>
-                        <option value="Llimosa">Llimosa</option>
-                    </select>
+                        var drawnItems = new L.FeatureGroup();
+                        map.addLayer(drawnItems);
+
+                        var drawControl = new L.Control.Draw({
+                            draw: {
+                                polyline: false,
+                                polygon: {
+                                    allowIntersection: false,
+                                    drawError: { color: '#e1e100', message: '<strong>Error:</strong> no es poden creuar línies!' },
+                                    shapeOptions: { color: '#10b981' }
+                                },
+                                circle: false,
+                                circlemarker: false,
+                                marker: true,
+                                rectangle: { shapeOptions: { color: '#10b981' } }
+                            },
+                            edit: { featureGroup: drawnItems }
+                        });
+                        map.addControl(drawControl);
+
+                        map.on(L.Draw.Event.CREATED, function (e) {
+                            drawnItems.clearLayers(); 
+                            var layer = e.layer;
+                            drawnItems.addLayer(layer);
+                            
+                            if (e.layerType === 'marker') {
+                                var latlng = layer.getLatLng();
+                                document.getElementById('coordInput').value = latlng.lat.toFixed(5) + ', ' + latlng.lng.toFixed(5);
+                            } else {
+                                var latlngs = layer.getLatLngs()[0];
+                                var simpleCoords = latlngs.map(l => '[' + l.lat.toFixed(5) + ',' + l.lng.toFixed(5) + ']').join(',');
+                                document.getElementById('coordInput').value = '[' + simpleCoords + ']';
+                            }
+                        });
+                        setTimeout(function() { map.invalidateSize(); }, 300);
+                    });
+                    </script>
                 </div>
             </div>
-
-            <button type="submit" class="btn"><i class="fa-solid fa-plus"></i> Afegir parcel·la</button>
         </form>
     </div>
 

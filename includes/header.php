@@ -22,7 +22,7 @@
             <li><a href="?p=cultius" class="<?= $p === 'cultius' ? 'active' : '' ?>"><i class="fa-solid fa-seedling"></i> <span>Cultius i Sectors</span></a></li>
             <li><a href="?p=personal" class="<?= $p === 'personal' ? 'active' : '' ?>"><i class="fa-solid fa-users"></i> <span>Personal</span></a></li>
             <li><a href="?p=tasques_hores" class="<?= $p === 'tasques_hores' ? 'active' : '' ?>"><i class="fa-solid fa-clipboard-check"></i> <span>Tasques i Hores</span></a></li>
-            <li><a href="?p=productes" class="<?= $p === 'productes' ? 'active' : '' ?>"><i class="fa-solid fa-box-open"></i> <span>Productes i Estoc</span></a></li>
+
             <li><a href="?p=inventari" class="<?= $p === 'inventari' ? 'active' : '' ?>"><i class="fa-solid fa-warehouse"></i> <span>Inventari</span></a></li>
             <li><a href="?p=monitoratge_plagues" class="<?= $p === 'monitoratge_plagues' ? 'active' : '' ?>"><i class="fa-solid fa-bug"></i> <span>Tractaments</span></a></li>
             <li><a href="?p=sensors" class="<?= $p === 'sensors' ? 'active' : '' ?>"><i class="fa-solid fa-tower-broadcast"></i> <span>Sensors i Alertes</span></a></li>

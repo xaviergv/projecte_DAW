@@ -62,6 +62,24 @@ if ($res_a) {
         $data_anys_values[] = (float)$row['total_kg'];
     }
 }
+
+// ────────────────────────────────────────────────
+// DADES KPI
+// ────────────────────────────────────────────────
+$kpi_where = "WHERE 1=1";
+if ($filtre_any) $kpi_where .= " AND YEAR(data_inici) = $filtre_any";
+if ($filtre_parcela) $kpi_where .= " AND id_parcela = $filtre_parcela";
+
+$res_kpi = $conn->query("SELECT SUM(quantitat) as t_kg, COUNT(id_collita) as t_collites, MAX(data_inici) as ultima_collita FROM Collita $kpi_where");
+$row_kpi = $res_kpi ? $res_kpi->fetch_assoc() : null;
+$total_kg = $row_kpi['t_kg'] ?? 0;
+$total_collites = $row_kpi['t_collites'] ?? 0;
+$ultima_collita = $row_kpi['ultima_collita'] ? date('d/m/Y', strtotime($row_kpi['ultima_collita'])) : '-';
+
+// Dades personal actiu (global)
+$res_pers = $conn->query("SELECT COUNT(*) as t FROM Treballador WHERE actiu=1");
+$total_treb = $res_pers ? $res_pers->fetch_assoc()['t'] : 0;
+
 ?>
 
 <div class="section">
@@ -101,6 +119,34 @@ if ($res_a) {
                 </div>
             </div>
         </form>
+    </div>
+
+    <!-- KPIs -->
+    <div class="dashboard-grid" style="margin-bottom:30px;">
+        <div class="kpi-card" style="border-bottom: 4px solid var(--success);">
+            <div class="kpi-icon" style="color:var(--success); background:rgba(16,185,129,0.1);"><i class="fa-solid fa-weight-hanging"></i></div>
+            <div class="kpi-content">
+                <h3>Producció Total</h3>
+                <p class="kpi-value"><?= number_format($total_kg, 2, ',', '.') ?> <span style="font-size:1rem; color:var(--text-muted);">kg</span></p>
+                <small style="color:var(--text-muted);">Segons filtres aplicats</small>
+            </div>
+        </div>
+        <div class="kpi-card" style="border-bottom: 4px solid var(--primary);">
+            <div class="kpi-icon" style="color:var(--primary); background:rgba(14,165,233,0.1);"><i class="fa-solid fa-truck-ramp-box"></i></div>
+            <div class="kpi-content">
+                <h3>Registres de Collita</h3>
+                <p class="kpi-value"><?= $total_collites ?></p>
+                <small style="color:var(--text-muted);">Última: <?= $ultima_collita ?></small>
+            </div>
+        </div>
+        <div class="kpi-card" style="border-bottom: 4px solid var(--warning);">
+            <div class="kpi-icon" style="color:var(--warning); background:rgba(245,158,11,0.1);"><i class="fa-solid fa-users"></i></div>
+            <div class="kpi-content">
+                <h3>Força de Treball</h3>
+                <p class="kpi-value"><?= $total_treb ?></p>
+                <small style="color:var(--text-muted);">Usuaris actius</small>
+            </div>
+        </div>
     </div>
 
     <!-- Contenidor de les gràfiques -->
